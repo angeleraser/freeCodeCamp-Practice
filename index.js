@@ -358,5 +358,44 @@ function palindrome(str) {
   });
   return isPalindrome;
 }
+function rot13(str) {
+  const abecedary = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const splittedString = str.toUpperCase().split("");
+  const decodedString = splittedString.map((val) => {
+    if (abecedary.join("").includes(val)) {
+      let index = abecedary.indexOf(val) + 13;
+      if (index >= abecedary.length) index = index - abecedary.length;
+      return abecedary[index];
+    } else {
+      return val;
+    }
+  });
+  return decodedString.join("");
+}
 
-
+function telephoneCheck(str) {
+  const parsedString = str.replace(/\W/gi, "");
+  const noSpecialCharacters = str.match(/\W/gi)?.length === 0;
+  const parantesis = str.match(/[(-)]/gi)?.length || 2;
+  const numbers = str.match(/\d/gi).length;
+  const startEndParentesis = str.startsWith("(") && str.endsWith(")");
+  if (parsedString.length === 10 && !startEndParentesis) {
+    const isAllNumbers = !/\D/gi.test(str);
+    const isValidNumberCount = numbers < 12 && numbers > 9;
+    return isAllNumbers || (isValidNumberCount && parantesis === 2);
+  } else if (parsedString.length === 11) {
+    const isAllNumbers = !/\D/gi.test(str.split(/\W/gi).join(""));
+    const startWith1 = str.startsWith("1");
+    return isAllNumbers && startWith1 && parantesis === 2;
+  } else if (str.length > 11) {
+    const startWith1 = numbers.length === 11 ? numbers.startsWith("1") : true;
+    return (
+      numbers.length > 9 &&
+      numbers.length < 12 &&
+      startWith1 &&
+      noSpecialCharacters
+    );
+  } else {
+    return false;
+  }
+}
