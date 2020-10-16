@@ -399,3 +399,69 @@ function telephoneCheck(str) {
     return false;
   }
 }
+
+function checkCashRegister(price, cash, cid) {
+  const CURRENCIES_AMOUNT = [0.01, 0.05, 0.1, 0.25, 1, 5, 10, 20, 100];
+  const cashInDrawer = cid
+      .map((bill, i) => {
+        const [currencyName, amount] = bill;
+        return {
+          currencyName,
+          value: CURRENCIES_AMOUNT[i],
+          amount,
+          count: Math.round(amount / CURRENCIES_AMOUNT[i]),
+        };
+      })
+      .sort((a, b) => a - b)
+      .reverse(),
+    changeDue = cash - price,
+    totalChangeDueInDrawer = [];
+  let totalAmount = changeDue;
+  for (let { value, currencyName, count } of cashInDrawer) {
+    if (value <= changeDue) {
+      let totalCurrencyAmount = 0;
+      while (value <= totalAmount && count > 0) {
+        totalAmount -= value;
+        count -= 1;
+        totalCurrencyAmount += value;
+        totalAmount = Number(totalAmount).toFixed(2);
+      }
+      if (totalCurrencyAmount > 0)
+        totalChangeDueInDrawer.push({
+          currencyName,
+          value,
+          amount: Number(totalCurrencyAmount.toFixed(2)),
+          count,
+        });
+    }
+  }
+  const updatedCashInDrawer = cashInDrawer.map((currency) => {
+      const updatedCurrency = [...totalChangeDueInDrawer].find(
+        ({ currencyName }) => currencyName === currency.currencyName
+      );
+      return updatedCurrency ? updatedCurrency : currency;
+    }),
+    totalChange =
+      totalChangeDueInDrawer.reduce((sum, c) => sum + c.amount, 0).toFixed(2) -
+      0,
+    availableCurrencies = updatedCashInDrawer.filter(
+      (currency) => currency.count > 0
+    );
+  const result = {
+    status: "",
+    change: totalChangeDueInDrawer.map((currency) => [
+      currency.currencyName,
+      currency.amount,
+    ]),
+  };
+  if (totalChange === changeDue && availableCurrencies.length > 0) {
+    result.status = "OPEN";
+  } else if (totalChange === changeDue && availableCurrencies.length === 0) {
+    result.status = "CLOSED";
+    result.change = cid;
+  } else {
+    result.status = "INSUFFICIENT_FUNDS";
+    result.change = [];
+  }
+  return result;
+}
